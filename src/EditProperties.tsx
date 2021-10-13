@@ -12,7 +12,10 @@ import {elementState} from './components/Rectangle/Rectangle'
 import getPropertyFrom from 'lodash.get'
 import setPropertyTo from 'lodash.set'
 
-const editPropertyState = selectorFamily<number, {path: string; id: number}>({
+export const editPropertyState = selectorFamily<
+  any,
+  {path: string; id: number}
+>({
   key: 'editProperty',
   get:
     ({path, id}) =>
