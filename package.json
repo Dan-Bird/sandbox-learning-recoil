@@ -17,6 +17,9 @@
     "@types/react-router-dom": "^5.1.7",
     "browser-nativefs": "^0.12.0",
     "framer-motion": "^3.2.1",
+    "immer": "^9.0.6",
+    "lodash.get": "^4.4.2",
+    "lodash.set": "^4.3.2",
     "nanoevents": "^5.1.10",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
@@ -52,5 +55,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/lodash.get": "^4.4.6",
+    "@types/lodash.set": "^4.3.6"
   }
 }
