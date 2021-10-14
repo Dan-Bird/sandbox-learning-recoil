@@ -6,11 +6,13 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react'
-import {selectorFamily, useRecoilState, useRecoilValue} from 'recoil'
+import {selector, selectorFamily, useRecoilState, useRecoilValue} from 'recoil'
 import {selectedElementState} from './Canvas'
 import {elementState} from './components/Rectangle/Rectangle'
 import getPropertyFrom from 'lodash.get'
 import setPropertyTo from 'lodash.set'
+import {ImageInfo, ImageInfoFallback} from './components/ImageInfo'
+import {Suspense} from 'react'
 
 export const editPropertyState = selectorFamily<
   any,
@@ -34,8 +36,20 @@ export const editPropertyState = selectorFamily<
     },
 })
 
+const hasImageState = selector({
+  key: 'hasImage',
+  get: ({get}) => {
+    const id = get(selectedElementState)
+    if (id === null) return
+
+    const element = get(elementState(id))
+    return element.image !== undefined
+  },
+})
+
 export const EditProperties = () => {
   const selectedElement = useRecoilValue(selectedElementState)
+  const hasImage = useRecoilValue(hasImageState)
   if (selectedElement === null) return null
 
   return (
@@ -56,6 +70,13 @@ export const EditProperties = () => {
           id={selectedElement}
         />
       </Section>
+      {hasImage && (
+        <Section heading="Image">
+          <Suspense fallback={<ImageInfoFallback />}>
+            <ImageInfo />
+          </Suspense>
+        </Section>
+      )}
     </Card>
   )
 }
