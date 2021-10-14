@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {Suspense} from 'react'
 import ReactDOM from 'react-dom'
 import './index.css'
 import Canvas from './Canvas'
@@ -23,7 +23,9 @@ ReactDOM.render(
               <Selectors />
             </Route>
             <Route path="/examples/atomeffects">
-              <AtomEffects />
+              <Suspense fallback={<div>Loading...</div>}>
+                <AtomEffects />
+              </Suspense>
             </Route>
             <Route path="/examples/async">
               <Async />

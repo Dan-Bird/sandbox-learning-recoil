@@ -4,7 +4,6 @@ import {Box, Divider, Heading, VStack} from '@chakra-ui/layout'
 import React, {useState} from 'react'
 import {
   atom,
-  AtomEffect,
   atomFamily,
   DefaultValue,
   useRecoilCallback,
@@ -12,37 +11,50 @@ import {
   useRecoilValue,
   useResetRecoilState,
 } from 'recoil'
+import {shoppingListAPI} from './fakeApi'
 
 type ItemType = {
   label: string
   checked: boolean
 }
 
-const persistLocalStorage: AtomEffect<any> = ({setSelf, onSet, node}) => {
-  const storedData = localStorage.getItem(node.key)
-  if (storedData) {
-    setSelf(JSON.parse(storedData))
-  }
-
-  onSet((newIds) => {
-    if (newIds instanceof DefaultValue) {
-      localStorage.removeItem(node.key)
-    } else {
-      localStorage.setItem(node.key, JSON.stringify(newIds))
-    }
-  })
-}
-
 const idsState = atom<number[]>({
   key: 'ids',
   default: [],
-  effects_UNSTABLE: [persistLocalStorage],
+  effects_UNSTABLE: [
+    ({setSelf}) => {
+      const itemsPromise = shoppingListAPI.getItems().then((items) => {
+        return Object.keys(items).map((id) => parseInt(id))
+      })
+      setSelf(itemsPromise)
+      // TODO: Fetch a list of item ids from the server
+    },
+  ],
 })
 
 const itemState = atomFamily<ItemType, number>({
   key: 'item',
   default: {label: '', checked: false},
-  effects_UNSTABLE: [persistLocalStorage],
+  effects_UNSTABLE: (id) => [
+    ({onSet, setSelf}) => {
+      const itemPromise = shoppingListAPI.getItem(id).then((item) => {
+        if (item === undefined) {
+          return new DefaultValue()
+        } else {
+          return item
+        }
+      })
+      setSelf(itemPromise)
+
+      onSet((item) => {
+        if (item instanceof DefaultValue) {
+          shoppingListAPI.deleteItem(id)
+        } else {
+          shoppingListAPI.createOrUpdateItem(id, item)
+        }
+      })
+    },
+  ],
 })
 
 export const AtomEffects = () => {
