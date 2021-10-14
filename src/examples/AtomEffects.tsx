@@ -18,15 +18,36 @@ type ItemType = {
   checked: boolean
 }
 
+class CachedAPI {
+  cachedItems: Record<string, ItemType> | undefined
+
+  private async getItems() {
+    if (!this.cachedItems) {
+      this.cachedItems = await shoppingListAPI.getItems()
+    }
+    return this.cachedItems
+  }
+
+  async getIds() {
+    const items = await this.getItems()
+    return Object.keys(items).map((id) => parseInt(id))
+  }
+
+  async getItem(id: number) {
+    const items = await this.getItems()
+    if (items[id] === undefined) return new DefaultValue()
+    return items[id]
+  }
+}
+
+const cachedAPI = new CachedAPI()
+
 const idsState = atom<number[]>({
   key: 'ids',
   default: [],
   effects_UNSTABLE: [
     ({setSelf}) => {
-      const itemsPromise = shoppingListAPI.getItems().then((items) => {
-        return Object.keys(items).map((id) => parseInt(id))
-      })
-      setSelf(itemsPromise)
+      setSelf(cachedAPI.getIds())
       // TODO: Fetch a list of item ids from the server
     },
   ],
@@ -37,14 +58,7 @@ const itemState = atomFamily<ItemType, number>({
   default: {label: '', checked: false},
   effects_UNSTABLE: (id) => [
     ({onSet, setSelf}) => {
-      const itemPromise = shoppingListAPI.getItem(id).then((item) => {
-        if (item === undefined) {
-          return new DefaultValue()
-        } else {
-          return item
-        }
-      })
-      setSelf(itemPromise)
+      setSelf(cachedAPI.getItem(id))
 
       onSet((item) => {
         if (item instanceof DefaultValue) {
