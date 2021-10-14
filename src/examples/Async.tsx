@@ -8,6 +8,8 @@ import {
   useSetRecoilState,
 } from 'recoil'
 import {getWeather} from './fakeApi'
+import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
+import {Button} from '@chakra-ui/button'
 
 const userState = selectorFamily({
   key: 'user',
@@ -15,6 +17,7 @@ const userState = selectorFamily({
     const userData = await fetch(
       `https://jsonplaceholder.typicode.com/users/${userId}`,
     ).then((res) => res.json())
+    if (userId === 4) throw new Error('User does not exist')
     return userData
   },
 })
@@ -76,6 +79,18 @@ const UserData = ({userId}: {userId: number}) => {
   )
 }
 
+const ErrorFallback = ({error, resetErrorBoundary}: FallbackProps) => {
+  return (
+    <div>
+      <Heading as="h2" size="md" mb={1}>
+        Something went wrong
+      </Heading>
+      <Text>{error.message}</Text>
+      <Button onClick={resetErrorBoundary}>OK</Button>
+    </div>
+  )
+}
+
 export const Async = () => {
   const [userId, setUserId] = useState<undefined | number>(undefined)
 
@@ -99,11 +114,18 @@ export const Async = () => {
         <option value="1">User 1</option>
         <option value="2">User 2</option>
         <option value="3">User 3</option>
+        <option value="4">User 4</option>
       </Select>
       {userId !== undefined && (
-        <Suspense fallback={<div>Loading...</div>}>
-          <UserData userId={userId} />
-        </Suspense>
+        <ErrorBoundary
+          FallbackComponent={ErrorFallback}
+          onReset={() => setUserId(undefined)}
+          resetKeys={[userId]}
+        >
+          <Suspense fallback={<div>Loading...</div>}>
+            <UserData userId={userId} />
+          </Suspense>
+        </ErrorBoundary>
       )}
     </Container>
   )

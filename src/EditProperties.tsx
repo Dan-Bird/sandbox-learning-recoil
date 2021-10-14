@@ -7,7 +7,7 @@ import {
   VStack,
 } from '@chakra-ui/react'
 import {selectorFamily, useRecoilState, useRecoilValue} from 'recoil'
-import {elementsState, selectedElementState} from './Canvas'
+import {selectedElementState} from './Canvas'
 import {elementState} from './components/Rectangle/Rectangle'
 import getPropertyFrom from 'lodash.get'
 import setPropertyTo from 'lodash.set'
